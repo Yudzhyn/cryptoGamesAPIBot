@@ -1,0 +1,4 @@
+.idea
+.tmp
+personal_configs.py
+__pycache__
