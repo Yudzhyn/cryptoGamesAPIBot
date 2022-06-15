@@ -10,10 +10,10 @@ from secrets import token_hex
 
 # urls addresses for http requests,
 # list of available coins
-from constants import URL_FULL as URLS, COIN_AVAILABLE_LIST
+from crypto_account.constants import URL_FULL as URLS, COIN_AVAILABLE_LIST
 
 # custom errors
-from enums import CryptoAccountError
+from crypto_account.errors import CryptoAccountError
 
 # for typing
 from typing import Dict, Callable, Optional, List
@@ -104,3 +104,9 @@ class CryptoAccount:
         if response:
             content_keys: List[str] = request_params["content"]
             return {key: response[key] for key in content_keys} if response else None
+
+    def __repr__(self) -> str:
+        return "<CryptoAccount (coin='{}', api_token='{}')>".format(
+            self.coin,
+            self.__key_api[:11]
+        )
