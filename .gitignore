@@ -4,3 +4,4 @@ personal_configs.py
 __pycache__
 *.log
 api_token.py
+bets.csv

@@ -5,6 +5,11 @@ from auto_bot.bet_data import BetData
 # delay
 from time import sleep
 
+# for storing bets
+from configs import LOGGING
+from other.store import StoreCSV, StoreBetData
+from datetime import datetime
+
 # strategies
 from strategy import Strategy
 
@@ -20,7 +25,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AutoBetBot:
     __slots__ = ["__account", "__start_balance", "__goal_balance",
                  "__profit_from_run", "__totally_wins",
-                 "__totally_losses", "__bet_data", "__strategy"]
+                 "__totally_losses", "__bet_data", "__strategy",
+                 "__storer_csv"]
 
     def __init__(self, account: CryptoAccount,
                  base_bet: float,
@@ -35,6 +41,8 @@ class AutoBetBot:
         self.__profit_from_run: float = 0
         self.__totally_wins: int = 0
         self.__totally_losses: int = 0
+
+        self.__storer_csv: StoreCSV = StoreCSV(LOGGING["FILE_CSV_NAME"])
 
         self.__bet_data: BetData = BetData(
             bet=base_bet,
@@ -67,6 +75,23 @@ class AutoBetBot:
         else:
             self.__strategy.calculate_if_lose(self.__bet_data)
 
+    def __store_bet(self) -> None:
+        store_bet_data: StoreBetData = StoreBetData(
+            datetime=str(datetime.now())[:-4],
+            coin=self.__account.coin,
+            bet_value=f"{self.__bet_data.bet:.8f}",
+            result="WIN" if self.__bet_data.win else "LOSE",
+            base_bet=f"{self.__bet_data.base_bet:.8f}",
+            under_over="OVER" if self.__bet_data.under_over else "UNDER",
+            number_wins_losses=f"{self.__bet_data.number_wins_from_last_lose}/"
+                               f"{self.__bet_data.number_losses_from_last_win}",
+            profit=f"{self.__bet_data.profit:.8f}",
+            payout=self.__bet_data.payout,
+            balance=f"{self.__bet_data.balance:.8f}",
+            strategy=str(self.__strategy),
+        )
+        self.__storer_csv.write(store_bet_data)
+
     def __bet_once(self) -> None:
 
         result_bet: Optional[Dict[str, str or float]] = \
@@ -78,6 +103,7 @@ class AutoBetBot:
             logger.warning("[-] The error arose during bet!")
 
         self.__handle_data(result_bet)
+        self.__store_bet()
         self.__calculate_feedback()
 
     def __is_balance_correct(self, goal_balance: float) -> bool:

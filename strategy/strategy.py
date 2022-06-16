@@ -15,3 +15,11 @@ class Strategy(abc.ABC):
     @abc.abstractmethod
     def calculate_if_win(self, bet_data: BetData):
         """Calculate parameters of bet data if win"""
+
+    @abc.abstractmethod
+    def __repr__(self):
+        """Calculate parameters of bet data if win"""
+
+    @abc.abstractmethod
+    def __str__(self):
+        """Calculate parameters of bet data if win"""

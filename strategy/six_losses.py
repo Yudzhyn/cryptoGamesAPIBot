@@ -27,3 +27,6 @@ class SixLossesStrategy(Strategy):
         return "<SixLosses (payout='{}')>".format(
             self.__payout
         )
+
+    def __str__(self) -> str:
+        return "SixLosses"

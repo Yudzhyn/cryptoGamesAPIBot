@@ -10,4 +10,5 @@ LOGGING: dict = {
         "PATH": r"./logs.log",
         "MESSAGE": "%(asctime)s | %(message)s"
     },
+    "FILE_CSV_NAME": "bets.csv",
 }
