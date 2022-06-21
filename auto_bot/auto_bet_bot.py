@@ -16,6 +16,9 @@ from strategy import Strategy
 # for typing
 from typing import Optional, Dict
 
+# tmp output
+from vision.console import ConsoleOutput
+
 # for logging
 import logging
 
@@ -26,7 +29,7 @@ class AutoBetBot:
     __slots__ = ["__account", "__start_balance", "__goal_balance",
                  "__profit_from_run", "__totally_wins",
                  "__totally_losses", "__bet_data", "__strategy",
-                 "__storer_csv"]
+                 "__storer_csv", "__output", "__goal_balance"]
 
     def __init__(self, account: CryptoAccount,
                  base_bet: float,
@@ -37,6 +40,8 @@ class AutoBetBot:
         if not self.__start_balance:
             logger.error(f"[-] Can't get balance of account. Error: {self.__account.error}")
             raise ValueError("Can't get balance of account")
+
+        self.__goal_balance: Optional[float] = 0.0
 
         self.__profit_from_run: float = 0
         self.__totally_wins: int = 0
@@ -52,6 +57,8 @@ class AutoBetBot:
 
         self.__strategy: Strategy = strategy
         self.__strategy.init_bet_data(self.__bet_data)
+
+        self.__output: ConsoleOutput = ConsoleOutput()
         logger.info(f"[+] Init auto bet bot. Account: {self.__account}. Strategy: {self.__strategy}")
 
     def __handle_data(self, result: dict) -> None:
@@ -92,6 +99,16 @@ class AutoBetBot:
         )
         self.__storer_csv.write(store_bet_data)
 
+    def __get_output_info(self) -> Dict:
+        return_dict: Dict = vars(self.__bet_data)
+        return_dict["profit"] = self.__profit_from_run
+        return_dict["goal_balance"] = self.__goal_balance
+        return_dict["strategy"] = self.__strategy
+        return_dict["totally_wins"] = self.__totally_wins
+        return_dict["totally_losses"] = self.__totally_losses
+        return_dict["coin"] = self.__account.coin
+        return return_dict
+
     def __bet_once(self) -> None:
 
         result_bet: Optional[Dict[str, str or float]] = \
@@ -104,29 +121,34 @@ class AutoBetBot:
 
         self.__handle_data(result_bet)
         self.__store_bet()
+        self.__output.print(self.__get_output_info())
         self.__calculate_feedback()
 
-    def __is_balance_correct(self, goal_balance: float) -> bool:
-        if goal_balance != 0.0 and self.__bet_data.balance >= goal_balance:
-            logger.info(f"[+] The balance achieved {goal_balance}.")
+    def __is_balance_correct(self) -> bool:
+        if self.__goal_balance != 0.0 and self.__bet_data.balance >= self.__goal_balance:
+            logger.info(f"[+] The balance achieved {self.__goal_balance}.")
+            self.__output.print_congratulation(f"[+] The balance achieved {self.__goal_balance}.")
             return False
 
         if self.__bet_data.bet > self.__bet_data.balance:
             logger.info("[-] The bet is more than balance.")
+            self.__output.print_congratulation("[-] The bet is more than balance.")
             return False
 
         return True
 
     def run(self, goal_balance: float = 0.0, delay: float = 0.1) -> None:
-        if not self.__is_balance_correct(goal_balance):
+        self.__goal_balance = goal_balance
+
+        if not self.__is_balance_correct():
             logger.info(f"[-] Auto bet bot can't run. "
-                        f"Goal balance '{goal_balance}'. Delay '{delay}'")
+                        f"Goal balance '{self.__goal_balance}'. Delay '{delay}'")
             return
 
-        logger.info(f"[+] Auto bet bot run. Goal balance '{goal_balance}'. Delay '{delay}'")
+        logger.info(f"[+] Auto bet bot run. Goal balance '{self.__goal_balance}'. Delay '{delay}'")
 
         while True:
-            if not self.__is_balance_correct(goal_balance):
+            if not self.__is_balance_correct():
                 break
             self.__bet_once()
             sleep(delay)
