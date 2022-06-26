@@ -10,24 +10,30 @@ class SixLossesStrategy(Strategy):
         self.__increase_coef_percent: int = 300
         self.__state = UnderOverState(2)
 
-    def init_bet_data(self, bet_feedback_data: BetData) -> None:
-        bet_feedback_data.payout = self.__payout
-        self.__state.init_state(bet_feedback_data.under_over)
-        bet_feedback_data.under_over = self.__state.next_state()
+    # [+] ----------------------------- init ----------------------------- [+]
+    def init_bet_data(self, bet_feedback: BetData) -> None:
+        bet_feedback.payout = self.__payout
 
-    def calculate_if_lose(self, bet_feedback_data: BetData) -> None:
-        bet_feedback_data.under_over = self.__state.next_state()
-        if bet_feedback_data.number_losses_from_last_win >= 6:
-            bet_feedback_data.bet = bet_feedback_data.base_bet
-            bet_feedback_data.number_losses_from_last_win = 0
+        # for alternate changing under and over
+        self.__state.init_state(bet_feedback.under_over)
+        bet_feedback.under_over = self.__state.next_state()
+
+    # [+] ----------------------------- lose ----------------------------- [+]
+    def calculate_if_lose(self, bet_feedback: BetData) -> None:
+        bet_feedback.under_over = self.__state.next_state()
+        if bet_feedback.number_losses_from_last_win >= 6:
+            bet_feedback.bet = bet_feedback.base_bet
+            bet_feedback.number_losses_from_last_win = 0
         else:
-            bet_feedback_data.bet = percentage(bet_feedback_data.bet,
-                                               self.__increase_coef_percent)
+            bet_feedback.bet = percentage(bet_feedback.bet,
+                                          self.__increase_coef_percent)
 
-    def calculate_if_win(self, bet_feedback_data: BetData) -> None:
-        bet_feedback_data.under_over = self.__state.next_state()
-        bet_feedback_data.bet = bet_feedback_data.base_bet
+    # [+] ----------------------------- win ------------------------------ [+]
+    def calculate_if_win(self, bet_feedback: BetData) -> None:
+        bet_feedback.under_over = self.__state.next_state()
+        bet_feedback.bet = bet_feedback.base_bet
 
+    # [+] ------------------------- represent ---------------------------- [+]
     def __repr__(self) -> str:
         return "<SixLosses (payout='{}')>".format(
             self.__payout

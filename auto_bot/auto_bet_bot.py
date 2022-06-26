@@ -20,6 +20,7 @@ from typing import Optional, Dict, Any
 from vision.console import ConsoleOutput
 
 # for logging
+from other.calculates import disable_e_notation
 import logging
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -99,8 +100,9 @@ class AutoBetBot:
 
     def __is_balance_correct(self) -> bool:
         if self.__bet_data.goal_balance != 0.0 and self.__bet_data.balance >= self.__bet_data.goal_balance:
-            logger.info(f"[+] The balance achieved {self.__bet_data.goal_balance}.")
-            self.__output.print_congratulation(f"The balance achieved {self.__bet_data.goal_balance}.")
+            logger.info(f"[+] The balance achieved {disable_e_notation(self.__bet_data.goal_balance)}.")
+            self.__output.print_congratulation(f"The balance achieved "
+                                               f"{disable_e_notation(self.__bet_data.goal_balance)}.")
             return False
 
         if self.__bet_data.bet > self.__bet_data.balance:
@@ -115,10 +117,13 @@ class AutoBetBot:
 
         if not self.__is_balance_correct():
             logger.info(f"[-] Auto bet bot can't run. "
-                        f"Goal balance '{self.__bet_data.goal_balance}'. Delay '{delay}'")
+                        f"Goal balance '{disable_e_notation(self.__bet_data.goal_balance)}'"
+                        f". Delay '{delay}'")
             return
 
-        logger.info(f"[+] Auto bet bot run. Goal balance '{self.__bet_data.goal_balance}'. Delay '{delay}'")
+        logger.info(f"[+] Auto bet bot run. "
+                    f"Goal balance '{disable_e_notation(self.__bet_data.goal_balance)}'. "
+                    f"Delay '{delay}'")
 
         while True:
             if not self.__is_balance_correct():
