@@ -5,18 +5,22 @@ from typing import List, Optional
 
 class Strategy(abc.ABC):
 
+    # [+] ----------------------------- init ----------------------------- [+]
     @abc.abstractmethod
     def init_bet_data(self, bet_data: BetData):
         """Initial parameters of bet data"""
 
+    # [+] ----------------------------- lose ----------------------------- [+]
     @abc.abstractmethod
     def calculate_if_lose(self, bet_data: BetData):
         """Calculate parameters of bet data if lose"""
 
+    # [+] ----------------------------- win ------------------------------ [+]
     @abc.abstractmethod
     def calculate_if_win(self, bet_data: BetData):
         """Calculate parameters of bet data if win"""
 
+    # [+] ------------------------- represent ---------------------------- [+]
     @abc.abstractmethod
     def __repr__(self):
         """Calculate parameters of bet data if win"""
